@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from 'react'
+import { Car } from 'lucide-react'
 
 interface InteractiveMapProps {
   onSelectRide?: (id: number) => void

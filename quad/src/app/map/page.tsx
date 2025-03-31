@@ -15,6 +15,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { InteractiveMap } from "@/components/interactive-map"
 import { Separator } from "@/components/ui/separator"
+import Link from 'next/link'
 
 export default function MapPage() {
     const [selectedRide, setSelectedRide] = useState<number | null>(null)
@@ -310,6 +311,9 @@ export default function MapPage() {
                     </div>
                 </div>
             </div>
+            <Link href="/help" className="text-blue-500 underline">
+                Help & Support
+            </Link>
         </div>
     )
 }

@@ -139,7 +139,7 @@ function CommuterSelfForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="full-name">Full Name</Label>
-          <Input id="full-name" placeholder="John Doe" />
+          <Input id="full-name" placeholder="Ravi Kumar" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -150,7 +150,7 @@ function CommuterSelfForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="phone">Phone Number</Label>
-          <Input id="phone" placeholder="+1 (555) 000-0000" />
+          <Input id="phone" placeholder="+91 98765 43210" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
@@ -165,12 +165,12 @@ function CommuterSelfForm() {
 
       <div className="space-y-2">
         <Label htmlFor="home-address">Home Address</Label>
-        <Input id="home-address" placeholder="123 Main St, City, State" />
+        <Input id="home-address" placeholder="123 Main St, Mumbai, Maharashtra" />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="work-address">Work/School Address</Label>
-        <Input id="work-address" placeholder="456 Office Blvd, City, State" />
+        <Input id="work-address" placeholder="456 Office Blvd, Bangalore, Karnataka" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,19 +211,19 @@ function CommuterParentForm() {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="parent-name">Parent&apos;s Full Name</Label>
-          <Input id="parent-name" placeholder="John Doe" />
+          <Label htmlFor="parent-name">Parent's Full Name</Label>
+          <Input id="parent-name" placeholder="Anita Sharma" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="parent-email">Parent&apos;s Email</Label>
+          <Label htmlFor="parent-email">Parent's Email</Label>
           <Input id="parent-email" type="email" placeholder="parent@example.com" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="parent-phone">Parent&apos;s Phone Number</Label>
-          <Input id="parent-phone" placeholder="+1 (555) 000-0000" />
+          <Label htmlFor="parent-phone">Parent's Phone Number</Label>
+          <Input id="parent-phone" placeholder="+91 98765 43210" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
@@ -238,33 +238,33 @@ function CommuterParentForm() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="child-name">Child&apos;s Full Name</Label>
-          <Input id="child-name" placeholder="Jane Doe" />
+          <Label htmlFor="child-name">Child's Full Name</Label>
+          <Input id="child-name" placeholder="Rahul Sharma" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="child-age">Child&apos;s Age</Label>
+          <Label htmlFor="child-age">Child's Age</Label>
           <Input id="child-age" type="number" min="1" max="18" />
         </div>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="pickup-address">Pickup Address</Label>
-        <Input id="pickup-address" placeholder="123 Home St, City, State" />
+        <Input id="pickup-address" placeholder="123 Home St, Mumbai, Maharashtra" />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="dropoff-address">Drop-off Address</Label>
-        <Input id="dropoff-address" placeholder="456 School Ave, City, State" />
+        <Input id="dropoff-address" placeholder="456 School Ave, Bangalore, Karnataka" />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="school-name">School Name</Label>
-        <Input id="school-name" placeholder="Springfield Elementary" />
+        <Input id="school-name" placeholder="Springfield School" />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="emergency-contact">Emergency Contact</Label>
-        <Input id="emergency-contact" placeholder="Name: Jane Doe, Relation: Aunt, Phone: +1 (555) 000-0000" />
+        <Input id="emergency-contact" placeholder="Name: Priya, Relation: Aunt, Phone: +91 98765 43210" />
       </div>
     </div>
   )
@@ -276,7 +276,7 @@ function DriverForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="full-name">Full Name</Label>
-          <Input id="full-name" placeholder="John Doe" />
+          <Input id="full-name" placeholder="Rajesh Gupta" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -287,7 +287,7 @@ function DriverForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="phone">Phone Number</Label>
-          <Input id="phone" placeholder="+1 (555) 000-0000" />
+          <Input id="phone" placeholder="+91 98765 43210" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
@@ -301,18 +301,18 @@ function DriverForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="license-number">Driver&apos;s License Number</Label>
+        <Label htmlFor="license-number">Driver's License Number</Label>
         <Input id="license-number" placeholder="DL12345678" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="car-model">Car Make & Model</Label>
-          <Input id="car-model" placeholder="Toyota Camry" />
+          <Input id="car-model" placeholder="Maruti Suzuki Swift" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="car-registration">Car Registration Number</Label>
-          <Input id="car-registration" placeholder="ABC123" />
+          <Input id="car-registration" placeholder="MH12AB1234" />
         </div>
       </div>
 
@@ -363,7 +363,7 @@ function AgencyForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="agency-phone">Agency Phone Number</Label>
-          <Input id="agency-phone" placeholder="+1 (555) 000-0000" />
+          <Input id="agency-phone" placeholder="+91 98765 43210" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
@@ -378,7 +378,7 @@ function AgencyForm() {
 
       <div className="space-y-2">
         <Label htmlFor="office-address">Office Address</Label>
-        <Input id="office-address" placeholder="123 Business Ave, City, State" />
+        <Input id="office-address" placeholder="123 Business Ave, Mumbai, Maharashtra" />
       </div>
 
       <div className="space-y-2">
