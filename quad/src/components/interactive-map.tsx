@@ -1,150 +1,179 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from 'react'
+import { Car } from 'lucide-react'
 
 interface InteractiveMapProps {
   onSelectRide?: (id: number) => void
 }
 
+interface Location {
+  id: number
+  coordinates: {
+    lat: number
+    lng: number
+  }
+  title: string
+  rating: number
+  price: number
+  driver: string
+  car: string
+}
+
+const locations: Location[] = [
+  {
+    id: 1,
+    coordinates: { lat: 12.9716, lng: 77.5946 },
+    title: "Downtown",
+    rating: 4.8,
+    price: 12.50,
+    driver: "Michael Smith",
+    car: "Toyota Camry"
+  },
+  {
+    id: 2,
+    coordinates: { lat: 12.9816, lng: 77.5846 },
+    title: "Airport",
+    rating: 4.9,
+    price: 14.50,
+    driver: "Sarah Johnson",
+    car: "Honda Civic"
+  },
+  {
+    id: 3,
+    coordinates: { lat: 12.9616, lng: 77.6046 },
+    title: "Suburbs",
+    rating: 4.7,
+    price: 16.50,
+    driver: "Robert Brown",
+    car: "Ford Escape"
+  },
+  {
+    id: 4,
+    coordinates: { lat: 12.9916, lng: 77.5746 },
+    title: "Mall",
+    rating: 4.8,
+    price: 18.50,
+    driver: "Jennifer Wilson",
+    car: "Nissan Altima"
+  }
+]
+
 export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
+  const [map, setMap] = useState<any>(null)
+  const [platform, setPlatform] = useState<any>(null)
+  const [infoBubble, setInfoBubble] = useState<any>(null)
 
   useEffect(() => {
-    // Store the current ref value to avoid React warning
-    const currentMapRef = mapRef.current
+    // Load HERE Maps scripts
+    const loadHereMaps = () => {
+      const script = document.createElement('script')
+      script.src = 'https://js.api.here.com/v3/3.1/mapsjs-core.js'
+      script.async = true
+      document.body.appendChild(script)
 
-    if (currentMapRef) {
-      const canvas = document.createElement("canvas")
-      canvas.width = currentMapRef.clientWidth
-      canvas.height = currentMapRef.clientHeight
-      currentMapRef.appendChild(canvas)
+      script.onload = () => {
+        const script2 = document.createElement('script')
+        script2.src = 'https://js.api.here.com/v3/3.1/mapsjs-service.js'
+        document.body.appendChild(script2)
 
-      const ctx = canvas.getContext("2d")
-      if (ctx) {
-        // Draw a simple map placeholder
-        ctx.fillStyle = "#f0f0f0"
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        script2.onload = () => {
+          const script3 = document.createElement('script')
+          script3.src = 'https://js.api.here.com/v3/3.1/mapsjs-ui.js'
+          document.body.appendChild(script3)
 
-        // Draw some roads
-        ctx.strokeStyle = "#ffffff"
-        ctx.lineWidth = 8
+          const script4 = document.createElement('script')
+          script4.src = 'https://js.api.here.com/v3/3.1/mapsjs-mapevents.js'
+          document.body.appendChild(script4)
 
-        // Horizontal roads
-        for (let i = 1; i < 8; i++) {
-          ctx.beginPath()
-          ctx.moveTo(0, canvas.height * (i / 8))
-          ctx.lineTo(canvas.width, canvas.height * (i / 8))
-          ctx.stroke()
-        }
-
-        // Vertical roads
-        for (let i = 1; i < 8; i++) {
-          ctx.beginPath()
-          ctx.moveTo(canvas.width * (i / 8), 0)
-          ctx.lineTo(canvas.width * (i / 8), canvas.height)
-          ctx.stroke()
-        }
-
-        // Draw road outlines
-        ctx.strokeStyle = "#dddddd"
-        ctx.lineWidth = 1
-
-        // Horizontal road outlines
-        for (let i = 1; i < 8; i++) {
-          ctx.beginPath()
-          ctx.moveTo(0, canvas.height * (i / 8) - 4)
-          ctx.lineTo(canvas.width, canvas.height * (i / 8) - 4)
-          ctx.stroke()
-
-          ctx.beginPath()
-          ctx.moveTo(0, canvas.height * (i / 8) + 4)
-          ctx.lineTo(canvas.width, canvas.height * (i / 8) + 4)
-          ctx.stroke()
-        }
-
-        // Vertical road outlines
-        for (let i = 1; i < 8; i++) {
-          ctx.beginPath()
-          ctx.moveTo(canvas.width * (i / 8) - 4, 0)
-          ctx.lineTo(canvas.width * (i / 8) - 4, canvas.height)
-          ctx.stroke()
-
-          ctx.beginPath()
-          ctx.moveTo(canvas.width * (i / 8) + 4, 0)
-          ctx.lineTo(canvas.width * (i / 8) + 4, canvas.height)
-          ctx.stroke()
-        }
-
-        // Draw user location
-        const userX = canvas.width * 0.5
-        const userY = canvas.height * 0.5
-
-        ctx.fillStyle = "#3b82f6"
-        ctx.beginPath()
-        ctx.arc(userX, userY, 8, 0, Math.PI * 2)
-        ctx.fill()
-
-        ctx.fillStyle = "rgba(59, 130, 246, 0.2)"
-        ctx.beginPath()
-        ctx.arc(userX, userY, 16, 0, Math.PI * 2)
-        ctx.fill()
-
-        // Draw available cars
-        const carPositions = [
-          { x: canvas.width * 0.3, y: canvas.height * 0.6, id: 1 },
-          { x: canvas.width * 0.7, y: canvas.height * 0.2, id: 2 },
-          { x: canvas.width * 0.2, y: canvas.height * 0.3, id: 3 },
-          { x: canvas.width * 0.8, y: canvas.height * 0.7, id: 4 },
-        ]
-
-        // Create click event handler for cars
-        const handleCarClick = (event: MouseEvent) => {
-          const rect = canvas.getBoundingClientRect()
-          const x = event.clientX - rect.left
-          const y = event.clientY - rect.top
-
-          carPositions.forEach((car) => {
-            // Check if click is within car radius
-            const distance = Math.sqrt(Math.pow(x - car.x, 2) + Math.pow(y - car.y, 2))
-            if (distance <= 10) {
-              onSelectRide?.(car.id)
-            }
-          })
-        }
-
-        carPositions.forEach((car) => {
-          ctx.fillStyle = "#10b981"
-          ctx.beginPath()
-          ctx.arc(car.x, car.y, 6, 0, Math.PI * 2)
-          ctx.fill()
-        })
-
-        // Add event listener once
-        canvas.addEventListener("click", handleCarClick)
-
-        // Add some labels for areas
-        const areas = [
-          { x: canvas.width * 0.2, y: canvas.height * 0.2, name: "Downtown" },
-          { x: canvas.width * 0.8, y: canvas.height * 0.2, name: "Airport" },
-          { x: canvas.width * 0.2, y: canvas.height * 0.8, name: "Suburbs" },
-          { x: canvas.width * 0.8, y: canvas.height * 0.8, name: "Mall" },
-        ]
-
-        areas.forEach((area) => {
-          ctx.fillStyle = "rgba(0, 0, 0, 0.7)"
-          ctx.font = "12px Arial"
-          ctx.fillText(area.name, area.x - 25, area.y)
-        })
-      }
-
-      return () => {
-        // Use the stored ref value in the cleanup function
-        if (currentMapRef && currentMapRef.contains(canvas)) {
-          currentMapRef.removeChild(canvas)
+          script4.onload = initializeMap
         }
       }
     }
-  }, [onSelectRide])
 
-  return <div ref={mapRef} className="w-full h-full bg-muted rounded-lg"></div>
+    loadHereMaps()
+
+    return () => {
+      if (map) {
+        map.dispose()
+      }
+    }
+  }, [])
+
+  const initializeMap = () => {
+    if (mapRef.current && (window as any).H) {
+      const H = (window as any).H
+      // Initialize the platform object
+      const platform = new H.service.Platform({
+        apikey: process.env.NEXT_PUBLIC_HERE_API_KEY
+      })
+      setPlatform(platform)
+
+      // Get the default map types from the platform object
+      const defaultLayers = platform.createDefaultLayers()
+
+      // Instantiate the map
+      const map = new H.Map(
+        mapRef.current,
+        defaultLayers.vector.normal.map,
+        {
+          center: { lat: 12.9716, lng: 77.5946 },
+          zoom: 13,
+          pixelRatio: window.devicePixelRatio || 1
+        }
+      )
+      setMap(map)
+
+      // Enable map interaction (pan, zoom, etc.)
+      const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map))
+
+      // Create the default UI components
+      const ui = H.ui.UI.createDefault(map, defaultLayers)
+      setInfoBubble(new H.ui.InfoBubble({ lat: 0, lng: 0 }, {
+        content: ''
+      }))
+
+      // Add markers for each location
+      locations.forEach(location => {
+        const marker = new H.map.Marker(location.coordinates)
+        marker.setData(location)
+        marker.addEventListener('tap', (evt: any) => {
+          const loc = evt.target.getData()
+          setSelectedLocation(loc)
+          onSelectRide?.(loc.id)
+          
+          const bubble = new H.ui.InfoBubble(loc.coordinates, {
+            content: `
+              <div class="p-4">
+                <h3 class="font-medium">${loc.driver}</h3>
+                <p class="text-sm text-gray-600">${loc.car}</p>
+                <div class="flex items-center gap-1 mt-1">
+                  <span class="text-yellow-500">★</span>
+                  <span class="text-sm">${loc.rating}</span>
+                </div>
+                <p class="text-sm font-medium mt-1">₹${loc.price}</p>
+                <div class="text-xs text-gray-500 mt-1">${loc.title}</div>
+              </div>
+            `
+          })
+          ui.addBubble(bubble)
+        })
+        map.addObject(marker)
+      })
+
+      // Make the map responsive
+      window.addEventListener('resize', () => {
+        map.getViewPort().resize()
+      })
+    }
+  }
+
+  return (
+    <div className="relative w-full h-full">
+      <div ref={mapRef} className="w-full h-full rounded-lg" />
+      <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+    </div>
+  )
 }
