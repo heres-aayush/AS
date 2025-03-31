@@ -19,26 +19,6 @@ interface Location {
   car: string
 }
 
-interface HereMap {
-  dispose: () => void
-  getViewPort: () => { resize: () => void }
-  addObject: (marker: unknown) => void
-}
-
-interface HerePlatform {
-  createDefaultLayers: () => {
-    vector: {
-      normal: {
-        map: unknown
-      }
-    }
-  }
-}
-
-interface HereUI {
-  addBubble: (bubble: unknown) => void
-}
-
 const locations: Location[] = [
   {
     id: 1,
@@ -80,7 +60,10 @@ const locations: Location[] = [
 
 export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
-  const [map, setMap] = useState<HereMap | null>(null)
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
+  const [map, setMap] = useState<any>(null)
+  const [platform, setPlatform] = useState<any>(null)
+  const [infoBubble, setInfoBubble] = useState<any>(null)
 
   useEffect(() => {
     // Load HERE Maps scripts
@@ -116,7 +99,7 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
         map.dispose()
       }
     }
-  }, [map])
+  }, [])
 
   const initializeMap = () => {
     if (mapRef.current && (window as any).H) {
@@ -124,13 +107,14 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
       // Initialize the platform object
       const platform = new H.service.Platform({
         apikey: process.env.NEXT_PUBLIC_HERE_API_KEY
-      }) as HerePlatform
+      })
+      setPlatform(platform)
 
       // Get the default map types from the platform object
       const defaultLayers = platform.createDefaultLayers()
 
       // Instantiate the map
-      const newMap = new H.Map(
+      const map = new H.Map(
         mapRef.current,
         defaultLayers.vector.normal.map,
         {
@@ -138,18 +122,25 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
           zoom: 13,
           pixelRatio: window.devicePixelRatio || 1
         }
-      ) as HereMap
-      setMap(newMap)
+      )
+      setMap(map)
+
+      // Enable map interaction (pan, zoom, etc.)
+      const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map))
 
       // Create the default UI components
-      const ui = H.ui.UI.createDefault(newMap, defaultLayers) as HereUI
+      const ui = H.ui.UI.createDefault(map, defaultLayers)
+      setInfoBubble(new H.ui.InfoBubble({ lat: 0, lng: 0 }, {
+        content: ''
+      }))
 
       // Add markers for each location
       locations.forEach(location => {
         const marker = new H.map.Marker(location.coordinates)
         marker.setData(location)
-        marker.addEventListener('tap', (evt: { target: { getData: () => Location } }) => {
+        marker.addEventListener('tap', (evt: any) => {
           const loc = evt.target.getData()
+          setSelectedLocation(loc)
           onSelectRide?.(loc.id)
           
           const bubble = new H.ui.InfoBubble(loc.coordinates, {
@@ -168,12 +159,12 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
           })
           ui.addBubble(bubble)
         })
-        newMap.addObject(marker)
+        map.addObject(marker)
       })
 
       // Make the map responsive
       window.addEventListener('resize', () => {
-        newMap.getViewPort().resize()
+        map.getViewPort().resize()
       })
     }
   }
