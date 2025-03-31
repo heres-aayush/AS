@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button"
 import Navigation from "@/components/navigation"
 import AnimatedBackground from "@/components/animated-background"
 
+export const metadata = {
+  title: 'Quad - Share the journey, save the planet',
+  description: 'Quad connects drivers with empty seats to people traveling the same way. Save money, reduce traffic, and make new friends.',
+} 
+
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen overflow-hidden">
