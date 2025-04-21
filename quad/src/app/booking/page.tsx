@@ -28,6 +28,8 @@ export default function BookingPage() {
     const [bookingStep, setBookingStep] = useState(1)
     const [rideType, setRideType] = useState("standard")
     const [paymentMethod, setPaymentMethod] = useState("card")
+    const [pickupLocation, setPickupLocation] = useState("")
+    const [destination, setDestination] = useState("")
 
     const handleNextStep = () => {
         if (bookingStep < 4) {
@@ -90,14 +92,26 @@ export default function BookingPage() {
                         <Label htmlFor="pickup">Pickup Location</Label>
                         <div className="relative">
                           <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                          <Input id="pickup" placeholder="Enter pickup address" className="pl-9" />
+                          <Input 
+                            id="pickup" 
+                            placeholder="Enter pickup address" 
+                            className="pl-9" 
+                            value={pickupLocation}
+                            onChange={(e) => setPickupLocation(e.target.value)}
+                          />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="destination">Destination</Label>
                         <div className="relative">
                           <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                          <Input id="destination" placeholder="Enter destination address" className="pl-9" />
+                          <Input 
+                            id="destination" 
+                            placeholder="Enter destination address" 
+                            className="pl-9" 
+                            value={destination}
+                            onChange={(e) => setDestination(e.target.value)}
+                          />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -521,7 +535,10 @@ export default function BookingPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px] rounded-lg overflow-hidden">
-                    <BookingMap />
+                    <BookingMap 
+                      pickupLocation={pickupLocation} 
+                      destination={destination} 
+                    />
                   </div>
                 </CardContent>
               </Card>
