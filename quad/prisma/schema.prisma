@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  password       String
+  phone          String?
+  userType       UserType
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Common fields for all types
+  fullName       String?
+
+  // Commuter (Self)
+  homeAddress    String?
+  workAddress    String?
+  travelTime     TravelTime?
+  preferredRole  PreferredRole?
+
+  // Commuter (Parent)
+  childName          String?
+  childAge           Int?
+  pickupAddress      String?
+  dropoffAddress     String?
+  schoolName         String?
+  emergencyContact   String?
+
+  // Driver
+  licenseNumber      String?
+  carModel           String?
+  carRegistration    String?
+  seatingCapacity    String?
+  routePreferences   String?
+  availability       String?
+
+  // Agency
+  agencyName         String?
+  officeAddress      String?
+  vehicleCount       Int?
+  driverDetails      String?
+  serviceAreas       String?
+  licenseUploadUrl   String?
+}
+
+enum UserType {
+  COMMUTER_SELF
+  COMMUTER_PARENT
+  DRIVER
+  AGENCY
+}
+
+enum TravelTime {
+  MORNING
+  MIDDAY
+  EVENING
+  NIGHT
+}
+
+enum PreferredRole {
+  PASSENGER
+  DRIVER
+  BOTH
+}
