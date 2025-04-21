@@ -1,15 +1,36 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, X } from "lucide-react"
+import { Menu, X, User, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    // Check for user data in localStorage
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      setUser(JSON.parse(userData))
+    }
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    setUser(null)
+    router.push('/')
+  }
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -19,6 +40,26 @@ export default function Navigation() {
     { name: "Help", href: "/help" },
     { name: "How to Use", href: "/how-to-use" },
   ]
+
+  const UserMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="flex items-center gap-2">
+          <User className="h-5 w-5" />
+          <span>{user?.name || user?.email}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => router.push('/dashboard')}>
+          Dashboard
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
@@ -43,9 +84,9 @@ export default function Navigation() {
             ))}
           </nav>
 
-          {/* Login/Signup Button (Desktop) */}
+          {/* User Menu or Login Button (Desktop) */}
           <div className="hidden md:block">
-            <Button onClick={() => router.push("/auth")}>Login / Sign Up</Button>
+            {user ? <UserMenu /> : <Button onClick={() => router.push("/auth")}>Login / Sign Up</Button>}
           </div>
 
           {/* Mobile Menu Button */}
@@ -79,15 +120,35 @@ export default function Navigation() {
                   ))}
                 </nav>
                 <div className="mt-auto border-t py-4">
-                  <Button
-                    className="w-full"
-                    onClick={() => {
-                      setIsOpen(false)
-                      router.push("/auth")
-                    }}
-                  >
-                    Login / Sign Up
-                  </Button>
+                  {user ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 px-2">
+                        <User className="h-5 w-5" />
+                        <span>{user?.name || user?.email}</span>
+                      </div>
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={() => {
+                          setIsOpen(false)
+                          handleLogout()
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      onClick={() => {
+                        setIsOpen(false)
+                        router.push("/auth")
+                      }}
+                    >
+                      Login / Sign Up
+                    </Button>
+                  )}
                 </div>
               </div>
             </SheetContent>

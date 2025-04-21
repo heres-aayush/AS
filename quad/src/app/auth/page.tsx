@@ -22,6 +22,10 @@ export default function AuthPage() {
     address: "",
     password: ""
   })
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: ""
+  })
   const [isLoading, setIsLoading] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,11 +58,63 @@ export default function AuthPage() {
         throw new Error(data.error || 'Registration failed')
       }
 
+      // Store user data in localStorage
+      localStorage.setItem('user', JSON.stringify({
+        email: formData.email,
+        userType: userType,
+        name: formData.email.split('@')[0], // Using email username as name for now
+        isLoggedIn: true
+      }))
+
       toast.success('Account created successfully!')
       router.push('/dashboard')
     } catch (error: any) {
       console.error('Registration error:', error)
       toast.error(error.message || 'Failed to create account. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleLoginInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setLoginData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed')
+      }
+
+      // Store user data in localStorage with the same structure as registration
+      localStorage.setItem('user', JSON.stringify({
+        email: loginData.email, // Use the email from login form
+        name: loginData.email.split('@')[0], // Use email username as name
+        isLoggedIn: true
+      }))
+
+      toast.success('Logged in successfully!')
+      router.push('/dashboard')
+    } catch (error: any) {
+      console.error('Login error:', error)
+      toast.error(error.message || 'Failed to login. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -195,28 +251,47 @@ export default function AuthPage() {
 
               <TabsContent value="login">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Welcome back</CardTitle>
-                    <CardDescription>Enter your credentials to access your account</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="name@example.com" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        <Link href="#" className="text-sm text-primary hover:underline">
-                          Forgot password?
-                        </Link>
+                  <form onSubmit={handleLogin}>
+                    <CardHeader>
+                      <CardTitle>Welcome back</CardTitle>
+                      <CardDescription>Enter your credentials to access your account</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="login-email">Email</Label>
+                        <Input 
+                          id="login-email" 
+                          name="email"
+                          type="email" 
+                          placeholder="name@example.com"
+                          value={loginData.email}
+                          onChange={handleLoginInputChange}
+                          required
+                        />
                       </div>
-                      <Input id="password" type="password" />
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button className="w-full">Login</Button>
-                  </CardFooter>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="login-password">Password</Label>
+                          <Link href="#" className="text-sm text-primary hover:underline">
+                            Forgot password?
+                          </Link>
+                        </div>
+                        <Input 
+                          id="login-password" 
+                          name="password"
+                          type="password"
+                          value={loginData.password}
+                          onChange={handleLoginInputChange}
+                          required
+                        />
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button className="w-full" type="submit" disabled={isLoading}>
+                        {isLoading ? 'Logging in...' : 'Login'}
+                      </Button>
+                    </CardFooter>
+                  </form>
                 </Card>
               </TabsContent>
             </Tabs>
