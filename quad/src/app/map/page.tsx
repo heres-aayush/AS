@@ -189,16 +189,11 @@ export default function MapPage() {
                         <div className="space-y-6">
                             <Card className="shadow-md rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle>Search Location</CardTitle>
+                                    <CardTitle>Recent Searches</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input placeholder="Search for a location" className="pl-9" />
-                                        </div>
                                         <div className="space-y-2">
-                                            <h3 className="text-sm font-medium">Recent Searches</h3>
                                             <div className="space-y-2">
                                                 <Button variant="outline" className="w-full justify-start">
                                                     <MapPin className="mr-2 h-4 w-4" />
@@ -285,28 +280,6 @@ export default function MapPage() {
                                     </CardFooter>
                                 </Card>
                             )}
-
-                            <Card className="shadow-md rounded-2xl">
-                                <CardHeader>
-                                    <CardTitle>Quick Options</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-2">
-                                        <Button variant="outline" className="w-full justify-start">
-                                            <User className="mr-2 h-4 w-4" />
-                                            Saved Locations
-                                        </Button>
-                                        <Button variant="outline" className="w-full justify-start">
-                                            <Star className="mr-2 h-4 w-4" />
-                                            Favorite Drivers
-                                        </Button>
-                                        <Button variant="outline" className="w-full justify-start">
-                                            <Car className="mr-2 h-4 w-4" />
-                                            Schedule a Ride
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
                         </div>
                     </div>
                 </div>
