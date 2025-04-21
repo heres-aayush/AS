@@ -7,13 +7,62 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import Navigation from "@/components/navigation"
 import AnimatedBackground from "@/components/animated-background"
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export default function AuthPage() {
+  const router = useRouter()
   const [userType, setUserType] = useState<string>("commuter-self")
+  const [formData, setFormData] = useState({
+    email: "",
+    phone: "",
+    address: "",
+    password: ""
+  })
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          userType: userType.replace('-', '_').toUpperCase(),
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed')
+      }
+
+      toast.success('Account created successfully!')
+      router.push('/dashboard')
+    } catch (error: any) {
+      console.error('Registration error:', error)
+      toast.error(error.message || 'Failed to create account. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -32,14 +81,14 @@ export default function AuthPage() {
 
               <TabsContent value="signup">
                 <Card>
-                  <CardHeader>
-                    <CardTitle>Create an account</CardTitle>
-                    <CardDescription>
-                      Choose your user type and fill in your details to get started with Quad.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
+                  <form onSubmit={handleSubmit}>
+                    <CardHeader>
+                      <CardTitle>Create an account</CardTitle>
+                      <CardDescription>
+                        Choose your user type and provide basic information to get started.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
                       <div className="space-y-2">
                         <Label htmlFor="user-type">I am a:</Label>
                         <RadioGroup
@@ -74,28 +123,73 @@ export default function AuthPage() {
                         </RadioGroup>
                       </div>
 
-                      {userType === "commuter-self" && <CommuterSelfForm />}
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          placeholder="name@example.com"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
 
-                      {userType === "commuter-parent" && <CommuterParentForm />}
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          placeholder="+91 98765 43210"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
 
-                      {userType === "driver" && <DriverForm />}
+                      <div className="space-y-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input
+                          id="address"
+                          name="address"
+                          placeholder="123 Main St, City, State"
+                          value={formData.address}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
 
-                      {userType === "agency" && <AgencyForm />}
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex flex-col space-y-4">
-                    <Button className="w-full">Create Account</Button>
-                    <p className="text-sm text-muted-foreground text-center">
-                      By creating an account, you agree to our{" "}
-                      <Link href="#" className="text-primary hover:underline">
-                        Terms of Service
-                      </Link>{" "}
-                      and{" "}
-                      <Link href="#" className="text-primary hover:underline">
-                        Privacy Policy
-                      </Link>
-                    </p>
-                  </CardFooter>
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          name="password"
+                          type="password"
+                          placeholder="Enter your password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-4">
+                      <Button className="w-full" type="submit" disabled={isLoading}>
+                        {isLoading ? 'Creating Account...' : 'Create Account'}
+                      </Button>
+                      <p className="text-sm text-muted-foreground text-center">
+                        By creating an account, you agree to our{" "}
+                        <Link href="#" className="text-primary hover:underline">
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link href="#" className="text-primary hover:underline">
+                          Privacy Policy
+                        </Link>
+                      </p>
+                    </CardFooter>
+                  </form>
                 </Card>
               </TabsContent>
 
@@ -132,275 +226,3 @@ export default function AuthPage() {
     </div>
   )
 }
-
-function CommuterSelfForm() {
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="full-name">Full Name</Label>
-          <Input id="full-name" placeholder="Ravi Kumar" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="name@example.com" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number</Label>
-          <Input id="phone" placeholder="+91 98765 43210" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="confirm-password">Confirm Password</Label>
-        <Input id="confirm-password" type="password" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="home-address">Home Address</Label>
-        <Input id="home-address" placeholder="123 Main St, Mumbai, Maharashtra" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="work-address">Work/School Address</Label>
-        <Input id="work-address" placeholder="456 Office Blvd, Bangalore, Karnataka" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="travel-time">Preferred Travel Time</Label>
-          <Select>
-            <SelectTrigger id="travel-time">
-              <SelectValue placeholder="Select time" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="morning">Morning (6AM - 9AM)</SelectItem>
-              <SelectItem value="midday">Midday (11AM - 2PM)</SelectItem>
-              <SelectItem value="evening">Evening (4PM - 7PM)</SelectItem>
-              <SelectItem value="night">Night (8PM - 11PM)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="preferred-role">Preferred Role</Label>
-          <Select>
-            <SelectTrigger id="preferred-role">
-              <SelectValue placeholder="Select role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="passenger">Passenger</SelectItem>
-              <SelectItem value="driver">Driver</SelectItem>
-              <SelectItem value="both">Both</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function CommuterParentForm() {
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="parent-name">Parent's Full Name</Label>
-          <Input id="parent-name" placeholder="Anita Sharma" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="parent-email">Parent's Email</Label>
-          <Input id="parent-email" type="email" placeholder="parent@example.com" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="parent-phone">Parent's Phone Number</Label>
-          <Input id="parent-phone" placeholder="+91 98765 43210" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="confirm-password">Confirm Password</Label>
-        <Input id="confirm-password" type="password" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="child-name">Child's Full Name</Label>
-          <Input id="child-name" placeholder="Rahul Sharma" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="child-age">Child's Age</Label>
-          <Input id="child-age" type="number" min="1" max="18" />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="pickup-address">Pickup Address</Label>
-        <Input id="pickup-address" placeholder="123 Home St, Mumbai, Maharashtra" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="dropoff-address">Drop-off Address</Label>
-        <Input id="dropoff-address" placeholder="456 School Ave, Bangalore, Karnataka" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="school-name">School Name</Label>
-        <Input id="school-name" placeholder="Springfield School" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="emergency-contact">Emergency Contact</Label>
-        <Input id="emergency-contact" placeholder="Name: Priya, Relation: Aunt, Phone: +91 98765 43210" />
-      </div>
-    </div>
-  )
-}
-
-function DriverForm() {
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="full-name">Full Name</Label>
-          <Input id="full-name" placeholder="Rajesh Gupta" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="name@example.com" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number</Label>
-          <Input id="phone" placeholder="+91 98765 43210" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="confirm-password">Confirm Password</Label>
-        <Input id="confirm-password" type="password" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="license-number">Driver's License Number</Label>
-        <Input id="license-number" placeholder="DL12345678" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="car-model">Car Make & Model</Label>
-          <Input id="car-model" placeholder="Maruti Suzuki Swift" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="car-registration">Car Registration Number</Label>
-          <Input id="car-registration" placeholder="MH12AB1234" />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="seating-capacity">Seating Capacity</Label>
-        <Select>
-          <SelectTrigger id="seating-capacity">
-            <SelectValue placeholder="Select capacity" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="2">2 seats</SelectItem>
-            <SelectItem value="3">3 seats</SelectItem>
-            <SelectItem value="4">4 seats</SelectItem>
-            <SelectItem value="5">5 seats</SelectItem>
-            <SelectItem value="6">6 seats</SelectItem>
-            <SelectItem value="7+">7+ seats</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="route-preferences">Route Preferences</Label>
-        <Input id="route-preferences" placeholder="Downtown to Suburbs, Highway routes, etc." />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="availability">Availability (Days & Time)</Label>
-        <Input id="availability" placeholder="Weekdays 7AM-9AM and 5PM-7PM" />
-      </div>
-    </div>
-  )
-}
-
-function AgencyForm() {
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="agency-name">Agency Name</Label>
-          <Input id="agency-name" placeholder="City Transport Services" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="agency-email">Agency Email</Label>
-          <Input id="agency-email" type="email" placeholder="contact@agency.com" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="agency-phone">Agency Phone Number</Label>
-          <Input id="agency-phone" placeholder="+91 98765 43210" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="confirm-password">Confirm Password</Label>
-        <Input id="confirm-password" type="password" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="office-address">Office Address</Label>
-        <Input id="office-address" placeholder="123 Business Ave, Mumbai, Maharashtra" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="vehicle-count">Number of Vehicles</Label>
-        <Input id="vehicle-count" type="number" min="1" />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="driver-details">Driver Details (Optional)</Label>
-        <Input id="driver-details" placeholder="Number of drivers, experience, etc." />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="service-areas">Service Areas</Label>
-        <Input id="service-areas" placeholder="Downtown, North Side, West County, etc." />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="license-upload">License & Certification Upload (Optional)</Label>
-        <Input id="license-upload" type="file" className="cursor-pointer" />
-      </div>
-    </div>
-  )
-}
-

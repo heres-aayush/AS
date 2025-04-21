@@ -1,10 +1,12 @@
 import Link from "next/link"
 import { UserPlus, Search, Calendar, MapPin, Shield, Star, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Navigation from "@/components/navigation"
 
 export default function HowToUsePage() {
   return (
     <div className="relative min-h-screen overflow-hidden">
+      <Navigation />
       <div className="relative z-10">
         {/* Navigation */}
         <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6 border-b">

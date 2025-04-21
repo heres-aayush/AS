@@ -1,5 +1,5 @@
 "use client"
-
+import Navigation from "@/components/navigation"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Calendar, Car, Clock, CreditCard, Info, MapPin, Plus, User } from 'lucide-react'
@@ -48,6 +48,7 @@ export default function BookingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:to-slate-800">
+      <Navigation />
       <div className="container mx-auto py-8 px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Book a Ride</h1>

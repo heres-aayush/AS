@@ -1,5 +1,6 @@
 "use client";
 
+import Navigation from "@/components/navigation"
 import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { CommuterDashboard } from "@/components/commuter-dashboard";
@@ -13,7 +14,7 @@ export default function Home() {
 
   return (
     <DashboardLayout userType={userType} onUserTypeChange={setUserType}>
-
+      <Navigation />
       {userType === "commuter" && <CommuterDashboard />}
       {userType === "parent" && <ParentDashboard />}
       {userType === "driver" && <DriverDashboard />}
