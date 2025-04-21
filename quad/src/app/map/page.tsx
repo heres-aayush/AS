@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Car, Filter, MapPin, Search, Star, User } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,6 +19,32 @@ import Link from 'next/link'
 
 export default function MapPage() {
     const [selectedRide, setSelectedRide] = useState<number | null>(null)
+    const [recentSearches, setRecentSearches] = useState<string[]>([])
+    
+    // Load recent searches from localStorage when component mounts
+    useEffect(() => {
+        const savedSearches = localStorage.getItem('recentSearches')
+        if (savedSearches) {
+            try {
+                setRecentSearches(JSON.parse(savedSearches))
+            } catch (error) {
+                console.error('Error parsing saved searches:', error)
+            }
+        }
+    }, [])
+    
+    // Handle new searches
+    const handleSearch = (query: string) => {
+        if (!query.trim()) return
+        
+        // Add new search to the beginning of the array and remove duplicates
+        setRecentSearches(prev => {
+            const updatedSearches = [query, ...prev.filter(item => item !== query)].slice(0, 3)
+            // Save to localStorage
+            localStorage.setItem('recentSearches', JSON.stringify(updatedSearches))
+            return updatedSearches
+        })
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:to-slate-800">
@@ -45,95 +71,15 @@ export default function MapPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="h-[500px] rounded-lg overflow-hidden">
-                                    <InteractiveMap onSelectRide={setSelectedRide} />
+                                    <InteractiveMap 
+                                        onSelectRide={setSelectedRide} 
+                                        onSearch={handleSearch}
+                                    />
                                 </div>
                             </CardContent>
                         </Card>
 
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-semibold">Available Rides</h2>
-                                <Sheet>
-                                    <SheetTrigger asChild>
-                                        <Button variant="outline" size="sm">
-                                            <Filter className="h-4 w-4 mr-2" />
-                                            Filters
-                                        </Button>
-                                    </SheetTrigger>
-                                    <SheetContent>
-                                        <SheetHeader>
-                                            <SheetTitle>Filter Rides</SheetTitle>
-                                            <SheetDescription>
-                                                Customize your search criteria
-                                            </SheetDescription>
-                                        </SheetHeader>
-                                        <div className="py-4 space-y-6">
-                                            <div className="space-y-2">
-                                                <Label>Price Range</Label>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm">₹5</span>
-                                                    <span className="text-sm">₹50</span>
-                                                </div>
-                                                <Slider defaultValue={[25]} max={50} step={1} />
-                                                <div className="text-center text-sm text-muted-foreground">
-                                                    Max: ₹25
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>Ride Type</Label>
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="standard">Standard</Label>
-                                                        <Switch id="standard" defaultChecked />
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="comfort">Comfort</Label>
-                                                        <Switch id="comfort" defaultChecked />
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="premium">Premium</Label>
-                                                        <Switch id="premium" defaultChecked />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>Driver Rating</Label>
-                                                <Select defaultValue="4">
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Minimum rating" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="3">3+ Stars</SelectItem>
-                                                        <SelectItem value="4">4+ Stars</SelectItem>
-                                                        <SelectItem value="4.5">4.5+ Stars</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>Additional Options</Label>
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="pet-friendly">Pet Friendly</Label>
-                                                        <Switch id="pet-friendly" />
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="wheelchair">Wheelchair Accessible</Label>
-                                                        <Switch id="wheelchair" />
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <Label htmlFor="child-seat">Child Seat Available</Label>
-                                                        <Switch id="child-seat" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="pt-4">
-                                                <Button className="w-full">Apply Filters</Button>
-                                            </div>
-                                        </div>
-                                    </SheetContent>
-                                </Sheet>
-                            </div>
-
                             <div className="space-y-4">
                                 {[1, 2, 3, 4].map((i) => (
                                     <Card 
@@ -195,18 +141,31 @@ export default function MapPage() {
                                     <div className="space-y-4">
                                         <div className="space-y-2">
                                             <div className="space-y-2">
-                                                <Button variant="outline" className="w-full justify-start">
-                                                    <MapPin className="mr-2 h-4 w-4" />
-                                                    Downtown Area
-                                                </Button>
-                                                <Button variant="outline" className="w-full justify-start">
-                                                    <MapPin className="mr-2 h-4 w-4" />
-                                                    Airport Terminal
-                                                </Button>
-                                                <Button variant="outline" className="w-full justify-start">
-                                                    <MapPin className="mr-2 h-4 w-4" />
-                                                    Shopping Mall
-                                                </Button>
+                                                {recentSearches.length > 0 ? (
+                                                    recentSearches.map((search, index) => (
+                                                        <Button 
+                                                            key={index} 
+                                                            variant="outline" 
+                                                            className="w-full justify-start"
+                                                            onClick={() => {
+                                                                const mapElement = document.querySelector('input[placeholder="Search location..."]') as HTMLInputElement
+                                                                if (mapElement) {
+                                                                    mapElement.value = search
+                                                                    // Trigger a synthetic submit event for the form
+                                                                    const form = mapElement.closest('form')
+                                                                    if (form) {
+                                                                        form.dispatchEvent(new Event('submit', { cancelable: true }))
+                                                                    }
+                                                                }
+                                                            }}
+                                                        >
+                                                            <MapPin className="mr-2 h-4 w-4" />
+                                                            {search}
+                                                        </Button>
+                                                    ))
+                                                ) : (
+                                                    <p className="text-center text-sm text-muted-foreground">No recent searches</p>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

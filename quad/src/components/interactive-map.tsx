@@ -5,6 +5,7 @@ import { Car, Search } from 'lucide-react'
 
 interface InteractiveMapProps {
   onSelectRide?: (id: number) => void
+  onSearch?: (query: string) => void
 }
 
 interface Location {
@@ -59,7 +60,7 @@ const locations: Location[] = [
   }
 ]
 
-export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
+export function InteractiveMap({ onSelectRide, onSearch }: InteractiveMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [map, setMap] = useState<any>(null)
@@ -177,11 +178,13 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
     if (!platform || !map || !searchQuery.trim()) return
     
     setIsSearching(true)
+    // Call the onSearch callback with the search query
+    onSearch?.(searchQuery)
     
     // Use the HERE Maps Geocoding API
-    const geocoder = platform.getSearchService()
+    const geocodingService = platform.getSearchService()
     
-    geocoder.geocode(
+    geocodingService.geocode(
       {
         q: searchQuery,
         limit: 1
@@ -196,18 +199,25 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
             lng: location.position.lng
           }
           
+          console.log("Found location:", location.title, position)
+          
           // Center the map on the found location
           map.setCenter(position)
           map.setZoom(15)
           
           // Create a marker for the found location
           const H = (window as any).H
-          const marker = new H.map.Marker(position)
           
           // Clear previous search results
-          map.removeObjects(map.getObjects().filter((obj: any) => 
+          const objectsToRemove = map.getObjects().filter((obj: any) => 
             obj.getData && obj.getData().isSearchResult
-          ))
+          )
+          if (objectsToRemove.length > 0) {
+            map.removeObjects(objectsToRemove)
+          }
+          
+          // Create and add the new marker
+          const marker = new H.map.Marker(position)
           
           // Tag this marker as a search result
           marker.setData({
@@ -219,18 +229,18 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
           map.addObject(marker)
           
           // Show an info bubble
-          if (infoBubble) {
-            const content = `
+          const ui = H.ui.UI.createDefault(map, platform.createDefaultLayers())
+          const bubble = new H.ui.InfoBubble(position, {
+            content: `
               <div class="p-4">
                 <h3 class="font-medium">${location.title}</h3>
                 <p class="text-sm text-gray-600">${location.address.label || ''}</p>
               </div>
             `
-            infoBubble.setPosition(position)
-            infoBubble.setContent(content)
-            infoBubble.open()
-          }
+          })
+          ui.addBubble(bubble)
         } else {
+          console.error("No results found for:", searchQuery)
           alert("No results found")
         }
       },
