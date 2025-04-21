@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useRef, useState } from 'react'
-import { Car } from 'lucide-react'
+import { Car, Search } from 'lucide-react'
 
 interface InteractiveMapProps {
   onSelectRide?: (id: number) => void
+  onSearch?: (query: string) => void
 }
 
 interface Location {
@@ -59,12 +60,15 @@ const locations: Location[] = [
   }
 ]
 
-export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
+export function InteractiveMap({ onSelectRide, onSearch }: InteractiveMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [map, setMap] = useState<any>(null)
   const [platform, setPlatform] = useState<any>(null)
-  const [infoBubble, setInfoBubble] = useState<any>(null)
+  const [ui, setUi] = useState<any>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+  const [currentBubble, setCurrentBubble] = useState<any>(null)
 
   useEffect(() => {
     // Load HERE Maps scripts
@@ -131,9 +135,7 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
 
       // Create the default UI components
       const ui = H.ui.UI.createDefault(map, defaultLayers)
-      setInfoBubble(new H.ui.InfoBubble({ lat: 0, lng: 0 }, {
-        content: ''
-      }))
+      setUi(ui)
 
       // Add markers for each location
       locations.forEach(location => {
@@ -143,6 +145,11 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
           const loc = evt.target.getData()
           setSelectedLocation(loc)
           onSelectRide?.(loc.id)
+          
+          // Close previous bubble if it exists
+          if (currentBubble) {
+            ui.removeBubble(currentBubble)
+          }
           
           const bubble = new H.ui.InfoBubble(loc.coordinates, {
             content: `
@@ -159,6 +166,7 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
             `
           })
           ui.addBubble(bubble)
+          setCurrentBubble(bubble)
         })
         map.addObject(marker)
       })
@@ -170,8 +178,115 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
     }
   }
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!platform || !map || !searchQuery.trim() || !ui) return
+    
+    setIsSearching(true)
+    // Call the onSearch callback with the search query
+    onSearch?.(searchQuery)
+    
+    try {
+      // Use the HERE Maps Geocoding API
+      const geocodingService = platform.getSearchService()
+      
+      geocodingService.geocode(
+        {
+          q: searchQuery,
+          limit: 1
+        },
+        (result: any) => {
+          setIsSearching(false)
+          
+          if (result.items && result.items.length > 0) {
+            const location = result.items[0]
+            const position = {
+              lat: location.position.lat,
+              lng: location.position.lng
+            }
+            
+            console.log("Found location:", location.title, position)
+            
+            // Center the map on the found location
+            map.setCenter(position)
+            map.setZoom(15)
+            
+            const H = (window as any).H
+            
+            // Clear previous search results
+            const objectsToRemove = map.getObjects().filter((obj: any) => 
+              obj.getData && obj.getData().isSearchResult
+            )
+            if (objectsToRemove.length > 0) {
+              map.removeObjects(objectsToRemove)
+            }
+            
+            // Create and add the new marker
+            const marker = new H.map.Marker(position)
+            
+            // Tag this marker as a search result
+            marker.setData({
+              isSearchResult: true,
+              title: location.title,
+              address: location.address
+            })
+            
+            map.addObject(marker)
+            
+            // Close previous bubble if it exists
+            if (currentBubble) {
+              ui.removeBubble(currentBubble)
+            }
+            
+            // Show an info bubble with the result
+            const bubble = new H.ui.InfoBubble(position, {
+              content: `
+                <div class="p-4">
+                  <h3 class="font-medium">${location.title}</h3>
+                  <p class="text-sm text-gray-600">${location.address ? location.address.label || '' : ''}</p>
+                </div>
+              `
+            })
+            ui.addBubble(bubble)
+            setCurrentBubble(bubble)
+          } else {
+            console.error("No results found for:", searchQuery)
+            alert("No results found for: " + searchQuery)
+          }
+        },
+        (error: any) => {
+          setIsSearching(false)
+          console.error("Geocoding error:", error)
+          alert("Error searching location: " + (error.message || error))
+        }
+      )
+    } catch (error) {
+      setIsSearching(false)
+      console.error("Search error:", error)
+      alert("Error during search operation")
+    }
+  }
+
   return (
     <div className="relative w-full h-full">
+      <div className="absolute top-4 left-0 right-0 z-10 px-4">
+        <form onSubmit={handleSearch} className="flex w-full max-w-md mx-auto">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search location..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button 
+            type="submit"
+            disabled={isSearching}
+            className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {isSearching ? 'Searching...' : <Search size={18} />}
+          </button>
+        </form>
+      </div>
       <div ref={mapRef} className="w-full h-full rounded-lg" />
       <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
     </div>
