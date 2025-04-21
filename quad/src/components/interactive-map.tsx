@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from 'react'
-import { Car } from 'lucide-react'
+import { Car, Search } from 'lucide-react'
 
 interface InteractiveMapProps {
   onSelectRide?: (id: number) => void
@@ -65,6 +65,8 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
   const [map, setMap] = useState<any>(null)
   const [platform, setPlatform] = useState<any>(null)
   const [infoBubble, setInfoBubble] = useState<any>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
     // Load HERE Maps scripts
@@ -170,8 +172,96 @@ export function InteractiveMap({ onSelectRide }: InteractiveMapProps) {
     }
   }
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!platform || !map || !searchQuery.trim()) return
+    
+    setIsSearching(true)
+    
+    // Use the HERE Maps Geocoding API
+    const geocoder = platform.getSearchService()
+    
+    geocoder.geocode(
+      {
+        q: searchQuery,
+        limit: 1
+      },
+      (result: any) => {
+        setIsSearching(false)
+        
+        if (result.items && result.items.length > 0) {
+          const location = result.items[0]
+          const position = {
+            lat: location.position.lat,
+            lng: location.position.lng
+          }
+          
+          // Center the map on the found location
+          map.setCenter(position)
+          map.setZoom(15)
+          
+          // Create a marker for the found location
+          const H = (window as any).H
+          const marker = new H.map.Marker(position)
+          
+          // Clear previous search results
+          map.removeObjects(map.getObjects().filter((obj: any) => 
+            obj.getData && obj.getData().isSearchResult
+          ))
+          
+          // Tag this marker as a search result
+          marker.setData({
+            isSearchResult: true,
+            title: location.title,
+            address: location.address
+          })
+          
+          map.addObject(marker)
+          
+          // Show an info bubble
+          if (infoBubble) {
+            const content = `
+              <div class="p-4">
+                <h3 class="font-medium">${location.title}</h3>
+                <p class="text-sm text-gray-600">${location.address.label || ''}</p>
+              </div>
+            `
+            infoBubble.setPosition(position)
+            infoBubble.setContent(content)
+            infoBubble.open()
+          }
+        } else {
+          alert("No results found")
+        }
+      },
+      (error: any) => {
+        setIsSearching(false)
+        console.error("Geocoding error:", error)
+        alert("Error searching location")
+      }
+    )
+  }
+
   return (
     <div className="relative w-full h-full">
+      <div className="absolute top-4 left-0 right-0 z-10 px-4">
+        <form onSubmit={handleSearch} className="flex w-full max-w-md mx-auto">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search location..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button 
+            type="submit"
+            disabled={isSearching}
+            className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {isSearching ? 'Searching...' : <Search size={18} />}
+          </button>
+        </form>
+      </div>
       <div ref={mapRef} className="w-full h-full rounded-lg" />
       <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
     </div>
