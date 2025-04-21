@@ -45,7 +45,7 @@ export function BookingMap({ pickupLocation, destination }: BookingMapProps) {
 
     loadHereMaps()
 
-    return () => {
+      return () => {
       if (map) {
         map.dispose()
       }
@@ -95,49 +95,88 @@ export function BookingMap({ pickupLocation, destination }: BookingMapProps) {
 
   // Update map when pickup or destination changes
   useEffect(() => {
-    if (!mapLoaded || !map || !platform || !pickupLocation || !destination) return
+    console.log("BookingMap useEffect triggered", { pickupLocation, destination });
+
+    if (!mapLoaded) {
+      console.log("BookingMap: Map not loaded yet");
+      return;
+    }
+    if (!map) {
+      console.log("BookingMap: Map object not available");
+      return;
+    }
+    if (!platform) {
+      console.log("BookingMap: Platform object not available");
+      return;
+    }
+    if (!pickupLocation || !destination) {
+      console.log("BookingMap: Pickup or destination location missing");
+      // Clear previous markers and route if one location is cleared
+      if (pickupMarker) map.removeObject(pickupMarker)
+      if (destinationMarker) map.removeObject(destinationMarker)
+      if (routeLine) map.removeObject(routeLine)
+      setPickupMarker(null);
+      setDestinationMarker(null);
+      setRouteLine(null);
+      return;
+    }
+
+    console.log("BookingMap: Proceeding with geocoding and routing...");
 
     const H = (window as any).H
     const geocodingService = platform.getSearchService()
 
     // Clear previous markers and route
+    console.log("BookingMap: Clearing previous map objects");
     if (pickupMarker) map.removeObject(pickupMarker)
     if (destinationMarker) map.removeObject(destinationMarker)
     if (routeLine) map.removeObject(routeLine)
+    setPickupMarker(null); // Reset state too
+    setDestinationMarker(null);
+    setRouteLine(null);
 
     // Geocode pickup location
+    console.log(`BookingMap: Geocoding pickup: ${pickupLocation}`);
     geocodingService.geocode(
       { q: pickupLocation, limit: 1 },
-      (result: any) => {
-        if (result.items && result.items.length > 0) {
-          const location = result.items[0]
+      (pickupResult: any) => {
+        console.log("BookingMap: Pickup geocoding result:", pickupResult);
+        if (pickupResult.items && pickupResult.items.length > 0) {
+          const pickupLocationData = pickupResult.items[0]
           const pickupPoint = {
-            lat: location.position.lat,
-            lng: location.position.lng
+            lat: pickupLocationData.position.lat,
+            lng: pickupLocationData.position.lng
           }
+          console.log(`BookingMap: Pickup location found at:`, pickupPoint);
           
           // Create pickup marker
-          const marker = new H.map.Marker(pickupPoint)
-          map.addObject(marker)
-          setPickupMarker(marker)
+          const newPickupMarker = new H.map.Marker(pickupPoint)
+          map.addObject(newPickupMarker)
+          setPickupMarker(newPickupMarker)
+          console.log("BookingMap: Pickup marker added");
 
           // Now geocode destination
+          console.log(`BookingMap: Geocoding destination: ${destination}`);
           geocodingService.geocode(
             { q: destination, limit: 1 },
-            (result: any) => {
-              if (result.items && result.items.length > 0) {
-                const location = result.items[0]
+            (destinationResult: any) => {
+              console.log("BookingMap: Destination geocoding result:", destinationResult);
+              if (destinationResult.items && destinationResult.items.length > 0) {
+                const destinationLocationData = destinationResult.items[0]
                 const destinationPoint = {
-                  lat: location.position.lat,
-                  lng: location.position.lng
+                  lat: destinationLocationData.position.lat,
+                  lng: destinationLocationData.position.lng
                 }
+                console.log(`BookingMap: Destination location found at:`, destinationPoint);
                 
                 // Create destination marker
-                const marker = new H.map.Marker(destinationPoint)
-                map.addObject(marker)
-                setDestinationMarker(marker)
+                const newDestinationMarker = new H.map.Marker(destinationPoint)
+                map.addObject(newDestinationMarker)
+                setDestinationMarker(newDestinationMarker)
+                console.log("BookingMap: Destination marker added");
 
                 // Calculate route between points
+                console.log("BookingMap: Calculating route...");
                 const routingService = platform.getRoutingService(null, 8)
                 const routingParameters = {
                   'routingMode': 'fast',
@@ -146,45 +185,65 @@ export function BookingMap({ pickupLocation, destination }: BookingMapProps) {
                   'destination': `${destinationPoint.lat},${destinationPoint.lng}`,
                   'return': 'polyline,summary'
                 }
+                console.log("BookingMap: Routing parameters:", routingParameters);
 
                 routingService.calculateRoute(
                   routingParameters,
-                  (result: any) => {
-                    if (result.routes.length) {
-                      const route = result.routes[0]
+                  (routeResult: any) => {
+                    console.log("BookingMap: Route calculation result:", routeResult);
+                    if (routeResult.routes && routeResult.routes.length > 0) { // Check routes array specifically
+                      const route = routeResult.routes[0]
+                      console.log("BookingMap: Route found:", route);
                       
                       // Create a linestring to use as a route line
                       const lineString = H.geo.LineString.fromFlexiblePolyline(route.sections[0].polyline)
                       
                       // Create a polyline to display the route
-                      const routeLine = new H.map.Polyline(lineString, {
+                      const newRouteLine = new H.map.Polyline(lineString, {
                         style: { strokeColor: '#0077CC', lineWidth: 5 }
                       })
 
                       // Add the route polyline to the map
-                      map.addObject(routeLine)
-                      setRouteLine(routeLine)
+                      map.addObject(newRouteLine)
+                      setRouteLine(newRouteLine)
+                      console.log("BookingMap: Route line added to map");
 
                       // Set the map's viewport to make the whole route visible
-                      map.getViewModel().setLookAtData({
-                        bounds: routeLine.getBoundingBox()
-                      })
+                      try {
+                        const bounds = newRouteLine.getBoundingBox();
+                        if (bounds) {
+                           console.log("BookingMap: Setting map viewport to bounds:", bounds);
+                           map.getViewModel().setLookAtData({ bounds });
+                        } else {
+                           console.warn("BookingMap: Could not get bounds for route line, centering map instead.");
+                           map.setCenter(pickupPoint); // Fallback centering
+                           map.setZoom(12); // Fallback zoom
+                        }
+                      } catch(boundsError) {
+                         console.error("BookingMap: Error setting map viewport:", boundsError);
+                      }
+                    } else {
+                      console.warn("BookingMap: No routes found in the result.");
                     }
                   },
                   (error: any) => {
-                    console.error('Route calculation error:', error)
+                    console.error('BookingMap: Route calculation error:', error)
                   }
                 )
+              } else {
+                console.warn("BookingMap: No items found for destination geocoding.");
               }
             },
             (error: any) => {
-              console.error('Destination geocoding error:', error)
+              console.error('BookingMap: Destination geocoding error:', error)
             }
           )
+        } else {
+          console.warn("BookingMap: No items found for pickup geocoding.");
         }
       },
       (error: any) => {
-        console.error('Pickup geocoding error:', error)
+        console.error('BookingMap: Pickup geocoding error:', error)
       }
     )
   }, [mapLoaded, map, platform, pickupLocation, destination])
