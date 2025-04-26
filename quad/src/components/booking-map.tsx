@@ -82,7 +82,9 @@ export function BookingMap({ pickupLocation, destination }: BookingMapProps) {
       const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map))
 
       // Create the default UI components
-      const ui = H.ui.UI.createDefault(map, defaultLayers)
+      if (H.ui && H.ui.UI) {
+        const ui = H.ui.UI.createDefault(map, defaultLayers)
+      }
 
       // Make the map responsive
       window.addEventListener('resize', () => {
