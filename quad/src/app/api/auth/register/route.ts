@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient, UserType} from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
+type UserType = 'COMMUTER_SELF' | 'COMMUTER_PARENT' | 'DRIVER' | 'AGENCY'
+
+export const dynamic = 'force-dynamic'
 
 // GET all users
 export async function GET() {

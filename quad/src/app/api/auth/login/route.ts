@@ -6,6 +6,8 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
