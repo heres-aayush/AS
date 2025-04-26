@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RideMap } from "@/components/ride-map"
 import { Badge } from "@/components/ui/badge"
+import { BookingMap } from "@/components/booking-map"
 
 export function DriverDashboard() {
   return (
@@ -174,8 +175,8 @@ export function DriverDashboard() {
               <CardDescription>Your current route and nearby passengers</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px] rounded-lg overflow-hidden">
-                <RideMap />
+              <div className="h-[400px] w-full">
+                <BookingMap pickupLocation="Start Location" destination="End Location" />
               </div>
             </CardContent>
           </Card>
