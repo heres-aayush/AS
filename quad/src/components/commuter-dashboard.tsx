@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RideMap } from "@/components/ride-map"
 import { Badge } from "@/components/ui/badge"
+import { BookingMap } from "@/components/booking-map"
 
 export function CommuterDashboard() {
   return (
@@ -142,7 +142,7 @@ export function CommuterDashboard() {
             </CardHeader>
             <CardContent>
               <div className="h-[300px] rounded-lg overflow-hidden">
-                <RideMap />
+                <BookingMap pickupLocation="Office" destination="Home" />
               </div>
             </CardContent>
           </Card>

@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RideMap } from "@/components/ride-map"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { BookingMap } from "@/components/booking-map"
 
 export function AgencyDashboard() {
   return (
@@ -305,8 +305,8 @@ export function AgencyDashboard() {
               <CardDescription>Real-time location of all vehicles</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px] rounded-lg overflow-hidden">
-                <RideMap />
+              <div className="h-[300px] rounded-lg overflow-hidden">
+                <BookingMap pickupLocation="Downtown" destination="Airport" />
               </div>
             </CardContent>
           </Card>

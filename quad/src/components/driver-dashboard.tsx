@@ -175,7 +175,7 @@ export function DriverDashboard() {
               <CardDescription>Your current route and nearby passengers</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px] w-full">
+              <div className="h-[300px] rounded-lg overflow-hidden">
                 <BookingMap pickupLocation="Start Location" destination="End Location" />
               </div>
             </CardContent>
