@@ -71,47 +71,96 @@ export function InteractiveMap({ onSelectRide, onSearch }: InteractiveMapProps) 
   const [currentBubble, setCurrentBubble] = useState<any>(null)
 
   useEffect(() => {
-    // Load HERE Maps scripts
-    const loadHereMaps = () => {
-      const script = document.createElement('script')
-      script.src = 'https://js.api.here.com/v3/3.1/mapsjs-core.js'
-      script.async = true
-      document.body.appendChild(script)
+    // Clear any existing scripts first
+    const existingScripts = document.querySelectorAll('script[src*="js.api.here.com"]');
+    existingScripts.forEach(script => script.remove());
 
-      script.onload = () => {
-        const script2 = document.createElement('script')
-        script2.src = 'https://js.api.here.com/v3/3.1/mapsjs-service.js'
-        document.body.appendChild(script2)
-
-        script2.onload = () => {
-          const script3 = document.createElement('script')
-          script3.src = 'https://js.api.here.com/v3/3.1/mapsjs-ui.js'
-          document.body.appendChild(script3)
-
-          const script4 = document.createElement('script')
-          script4.src = 'https://js.api.here.com/v3/3.1/mapsjs-mapevents.js'
-          document.body.appendChild(script4)
-
-          script4.onload = initializeMap
-        }
+    // The order of script loading is important
+    const loadScript = (url: string, callback?: () => void) => {
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = url;
+      script.async = false;  // Important: load scripts in sequence
+      
+      if (callback) {
+        script.onload = callback;
       }
-    }
-
-    loadHereMaps()
+      
+      document.body.appendChild(script);
+      return script;
+    };
+    
+    // Sequential loading to ensure dependencies are respected
+    loadScript('https://js.api.here.com/v3/3.1/mapsjs-core.js', () => {
+      loadScript('https://js.api.here.com/v3/3.1/mapsjs-service.js', () => {
+        loadScript('https://js.api.here.com/v3/3.1/mapsjs-ui.js', () => {
+          loadScript('https://js.api.here.com/v3/3.1/mapsjs-mapevents.js', () => {
+            console.log("All HERE scripts loaded, initializing map");
+            // Add CSS for UI components
+            if (!document.querySelector('link[href*="mapsjs-ui.css"]')) {
+              const link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.type = 'text/css';
+              link.href = 'https://js.api.here.com/v3/3.1/mapsjs-ui.css';
+              document.head.appendChild(link);
+            }
+            
+            // Now it's safe to initialize the map
+            setTimeout(() => {
+              initializeMap();
+            }, 100); // Small delay to ensure everything is ready
+          });
+        });
+      });
+    });
 
     return () => {
       if (map) {
-        map.dispose()
+        map.dispose();
       }
-    }
+      
+      // Clean up scripts and CSS
+      const scripts = document.querySelectorAll('script[src*="js.api.here.com"]');
+      scripts.forEach(script => {
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+      });
+      
+      const links = document.querySelectorAll('link[href*="mapsjs-ui.css"]');
+      links.forEach(link => {
+        if (document.head.contains(link)) {
+          document.head.removeChild(link);
+        }
+      });
+    };
   }, [])
 
   const initializeMap = () => {
-    if (mapRef.current && (window as any).H) {
-      const H = (window as any).H
+    const H = (window as any).H;
+    
+    if (!mapRef.current || !H) {
+      console.error("Map initialization failed: Map reference or H namespace not available");
+      return;
+    }
+    
+    // Make sure all required modules are loaded
+    if (!H.service || !H.Map || !H.ui || !H.ui.UI || !H.mapevents) {
+      console.error("Map initialization failed: Required modules not loaded");
+      console.log("Available modules:", {
+        service: !!H.service,
+        Map: !!H.Map,
+        ui: !!H.ui,
+        UI: H.ui ? !!H.ui.UI : false,
+        mapevents: !!H.mapevents
+      });
+      return;
+    }
+    
+    try {
       // Initialize the platform object
       const platform = new H.service.Platform({
-        apikey: process.env.NEXT_PUBLIC_HERE_API_KEY
+        apikey: '8THaPCbMuqIqkI5ELLnp7b5NcMuXAD94oTirWIACfCI' // Hardcoded key for now
       })
       setPlatform(platform)
 
@@ -175,97 +224,84 @@ export function InteractiveMap({ onSelectRide, onSearch }: InteractiveMapProps) 
       window.addEventListener('resize', () => {
         map.getViewPort().resize()
       })
-    }
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!platform || !map || !searchQuery.trim() || !ui) return
-    
-    setIsSearching(true)
-    // Call the onSearch callback with the search query
-    onSearch?.(searchQuery)
-    
-    try {
-      // Use the HERE Maps Geocoding API
-      const geocodingService = platform.getSearchService()
-      
-      geocodingService.geocode(
-        {
-          q: searchQuery,
-          limit: 1
-        },
-        (result: any) => {
-          setIsSearching(false)
-          
-          if (result.items && result.items.length > 0) {
-            const location = result.items[0]
-            const position = {
-              lat: location.position.lat,
-              lng: location.position.lng
-            }
-            
-            console.log("Found location:", location.title, position)
-            
-            // Center the map on the found location
-            map.setCenter(position)
-            map.setZoom(15)
-            
-            const H = (window as any).H
-            
-            // Clear previous search results
-            const objectsToRemove = map.getObjects().filter((obj: any) => 
-              obj.getData && obj.getData().isSearchResult
-            )
-            if (objectsToRemove.length > 0) {
-              map.removeObjects(objectsToRemove)
-            }
-            
-            // Create and add the new marker
-            const marker = new H.map.Marker(position)
-            
-            // Tag this marker as a search result
-            marker.setData({
-              isSearchResult: true,
-              title: location.title,
-              address: location.address
-            })
-            
-            map.addObject(marker)
-            
-            // Close previous bubble if it exists
-            if (currentBubble) {
-              ui.removeBubble(currentBubble)
-            }
-            
-            // Show an info bubble with the result
-            const bubble = new H.ui.InfoBubble(position, {
-              content: `
-                <div class="p-4">
-                  <h3 class="font-medium">${location.title}</h3>
-                  <p class="text-sm text-gray-600">${location.address ? location.address.label || '' : ''}</p>
-                </div>
-              `
-            })
-            ui.addBubble(bubble)
-            setCurrentBubble(bubble)
-          } else {
-            console.error("No results found for:", searchQuery)
-            alert("No results found for: " + searchQuery)
-          }
-        },
-        (error: any) => {
-          setIsSearching(false)
-          console.error("Geocoding error:", error)
-          alert("Error searching location: " + (error.message || error))
-        }
-      )
     } catch (error) {
-      setIsSearching(false)
-      console.error("Search error:", error)
-      alert("Error during search operation")
+      console.error("Map initialization error:", error);
     }
   }
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Get current form data directly from input
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const query = formData.get('search') as string;
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) {
+      alert("Please enter a search term");
+      return;
+    }
+
+    // Update state with cleaned query
+    setSearchQuery(trimmedQuery);
+
+    if (!map || !ui) {
+      alert("Map is not fully initialized yet");
+      return;
+    }
+
+    setIsSearching(true);
+
+    // Use the HERE Geocoding API
+    const apiKey = '8THaPCbMuqIqkI5ELLnp7b5NcMuXAD94oTirWIACfCI';
+    const encodedQuery = encodeURIComponent(trimmedQuery);
+    const url = `https://geocode.search.hereapi.com/v1/geocode?q=${encodedQuery}&apiKey=${apiKey}`;
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error(`Search failed: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        setIsSearching(false);
+        
+        if (data.items?.length > 0) {
+          const item = data.items[0];
+          const position = item.position;
+          
+          // Update map view
+          map.setCenter(position);
+          map.setZoom(15);
+
+          // Clear previous search markers
+          const oldMarkers = map.getObjects().filter((obj: any) => 
+            obj.getData?.isSearchResult
+          );
+          map.removeObjects(oldMarkers);
+
+          // Add new marker
+          const H = (window as any).H;
+          const marker = new H.map.Marker(position);
+          marker.setData({ isSearchResult: true, title: item.title });
+          map.addObject(marker);
+
+          // Update info bubble
+          if (currentBubble) ui.removeBubble(currentBubble);
+          const bubble = new H.ui.InfoBubble(position, {
+            content: `<div class="p-4"><h3 class="font-medium">${item.title}</h3></div>`
+          });
+          ui.addBubble(bubble);
+          setCurrentBubble(bubble);
+        } else {
+          alert("No results found for: " + trimmedQuery);
+        }
+      })
+      .catch(error => {
+        setIsSearching(false);
+        alert("Search error: " + error.message);
+      });
+  }
+  
+  
 
   return (
     <div className="relative w-full h-full">
@@ -273,6 +309,7 @@ export function InteractiveMap({ onSelectRide, onSearch }: InteractiveMapProps) 
         <form onSubmit={handleSearch} className="flex w-full max-w-md mx-auto">
           <input
             type="text"
+            name="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search location..."

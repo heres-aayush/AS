@@ -1035,7 +1035,7 @@ export namespace Prisma {
     id: string
     email: string
     phone: string
-    address: string
+    address: string | null
     userType: $Enums.UserType
     password: string | null
     createdAt: Date
@@ -1092,7 +1092,7 @@ export namespace Prisma {
       id: string
       email: string
       phone: string
-      address: string
+      address: string | null
       userType: $Enums.UserType
       password: string | null
       createdAt: Date
@@ -1893,7 +1893,7 @@ export namespace Prisma {
     id?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     phone?: StringFilter<"User"> | string
-    address?: StringFilter<"User"> | string
+    address?: StringNullableFilter<"User"> | string | null
     userType?: EnumUserTypeFilter<"User"> | $Enums.UserType
     password?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -1904,7 +1904,7 @@ export namespace Prisma {
     id?: SortOrder
     email?: SortOrder
     phone?: SortOrder
-    address?: SortOrder
+    address?: SortOrderInput | SortOrder
     userType?: SortOrder
     password?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -1919,7 +1919,7 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     phone?: StringFilter<"User"> | string
-    address?: StringFilter<"User"> | string
+    address?: StringNullableFilter<"User"> | string | null
     userType?: EnumUserTypeFilter<"User"> | $Enums.UserType
     password?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -1930,7 +1930,7 @@ export namespace Prisma {
     id?: SortOrder
     email?: SortOrder
     phone?: SortOrder
-    address?: SortOrder
+    address?: SortOrderInput | SortOrder
     userType?: SortOrder
     password?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -1947,7 +1947,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     phone?: StringWithAggregatesFilter<"User"> | string
-    address?: StringWithAggregatesFilter<"User"> | string
+    address?: StringNullableWithAggregatesFilter<"User"> | string | null
     userType?: EnumUserTypeWithAggregatesFilter<"User"> | $Enums.UserType
     password?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -1958,7 +1958,7 @@ export namespace Prisma {
     id?: string
     email: string
     phone: string
-    address: string
+    address?: string | null
     userType: $Enums.UserType
     password?: string | null
     createdAt?: Date | string
@@ -1969,7 +1969,7 @@ export namespace Prisma {
     id?: string
     email: string
     phone: string
-    address: string
+    address?: string | null
     userType: $Enums.UserType
     password?: string | null
     createdAt?: Date | string
@@ -1980,7 +1980,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     userType?: EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -1991,7 +1991,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     userType?: EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2002,7 +2002,7 @@ export namespace Prisma {
     id?: string
     email: string
     phone: string
-    address: string
+    address?: string | null
     userType: $Enums.UserType
     password?: string | null
     createdAt?: Date | string
@@ -2013,7 +2013,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     userType?: EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2024,7 +2024,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
-    address?: StringFieldUpdateOperationsInput | string
+    address?: NullableStringFieldUpdateOperationsInput | string | null
     userType?: EnumUserTypeFieldUpdateOperationsInput | $Enums.UserType
     password?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2046,13 +2046,6 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
-  export type EnumUserTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.UserType | EnumUserTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.UserType[]
-    notIn?: $Enums.UserType[]
-    not?: NestedEnumUserTypeFilter<$PrismaModel> | $Enums.UserType
-  }
-
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -2066,6 +2059,13 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     search?: string
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type EnumUserTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserType | EnumUserTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.UserType[]
+    notIn?: $Enums.UserType[]
+    not?: NestedEnumUserTypeFilter<$PrismaModel> | $Enums.UserType
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -2141,16 +2141,6 @@ export namespace Prisma {
     _max?: NestedStringFilter<$PrismaModel>
   }
 
-  export type EnumUserTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.UserType | EnumUserTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.UserType[]
-    notIn?: $Enums.UserType[]
-    not?: NestedEnumUserTypeWithAggregatesFilter<$PrismaModel> | $Enums.UserType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumUserTypeFilter<$PrismaModel>
-    _max?: NestedEnumUserTypeFilter<$PrismaModel>
-  }
-
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -2167,6 +2157,16 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type EnumUserTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserType | EnumUserTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.UserType[]
+    notIn?: $Enums.UserType[]
+    not?: NestedEnumUserTypeWithAggregatesFilter<$PrismaModel> | $Enums.UserType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumUserTypeFilter<$PrismaModel>
+    _max?: NestedEnumUserTypeFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -2187,12 +2187,12 @@ export namespace Prisma {
     set?: string
   }
 
-  export type EnumUserTypeFieldUpdateOperationsInput = {
-    set?: $Enums.UserType
-  }
-
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type EnumUserTypeFieldUpdateOperationsInput = {
+    set?: $Enums.UserType
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -2214,13 +2214,6 @@ export namespace Prisma {
     not?: NestedStringFilter<$PrismaModel> | string
   }
 
-  export type NestedEnumUserTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.UserType | EnumUserTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.UserType[]
-    notIn?: $Enums.UserType[]
-    not?: NestedEnumUserTypeFilter<$PrismaModel> | $Enums.UserType
-  }
-
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -2234,6 +2227,13 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     search?: string
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedEnumUserTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserType | EnumUserTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.UserType[]
+    notIn?: $Enums.UserType[]
+    not?: NestedEnumUserTypeFilter<$PrismaModel> | $Enums.UserType
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -2276,16 +2276,6 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type NestedEnumUserTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.UserType | EnumUserTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.UserType[]
-    notIn?: $Enums.UserType[]
-    not?: NestedEnumUserTypeWithAggregatesFilter<$PrismaModel> | $Enums.UserType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumUserTypeFilter<$PrismaModel>
-    _max?: NestedEnumUserTypeFilter<$PrismaModel>
-  }
-
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -2313,6 +2303,16 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedEnumUserTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserType | EnumUserTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.UserType[]
+    notIn?: $Enums.UserType[]
+    not?: NestedEnumUserTypeWithAggregatesFilter<$PrismaModel> | $Enums.UserType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumUserTypeFilter<$PrismaModel>
+    _max?: NestedEnumUserTypeFilter<$PrismaModel>
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
