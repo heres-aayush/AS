@@ -39,7 +39,8 @@ export async function POST(request: Request) {
       data: {
         email,
         phone,
-        address,
+        // address, is being removed since facing problem deploying 
+        // will havve to run npx prisma generate in vercel somehow 
         userType: userType as UserType,
         password: hashedPassword,
       },

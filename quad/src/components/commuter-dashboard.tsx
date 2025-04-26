@@ -12,7 +12,7 @@ export function CommuterDashboard() {
     <div className="grid gap-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Welcome back, Rakesh</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
           <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your rides today.</p>
         </div>
         <div className="flex items-center gap-2">

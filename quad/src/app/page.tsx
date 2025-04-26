@@ -29,7 +29,9 @@ export default function LandingPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button size="lg" className="text-lg px-8">
+                    <a href =" ./booking">
                     Book a Ride
+                    </a>
                   </Button>
                   <Button size="lg" variant="outline" className="text-lg px-8">
                     Offer a Ride

@@ -204,10 +204,14 @@ export default function HowToUsePage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" className="text-lg px-8">
+                  <a href = "./help">
                   Visit FAQ Page
+                  </a>
                 </Button>
                 <Button size="lg" variant="outline" className="text-lg px-8">
+                  <a href = "./help">
                   Contact Support
+                  </a>
                 </Button>
               </div>
             </div>
@@ -222,7 +226,9 @@ export default function HowToUsePage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" variant="secondary" className="text-lg px-8">
+                  <a href = "./booking">
                   Book a Ride
+                  </a>
                 </Button>
                 <Button
                   size="lg"

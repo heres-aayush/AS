@@ -61,9 +61,8 @@ export default function MapPage() {
                                 <div className="flex items-center justify-between">
                                     <CardTitle>Map View</CardTitle>
                                     <Tabs defaultValue="all" className="w-[200px]">
-                                        <TabsList className="grid w-full grid-cols-2">
+                                        <TabsList className="grid w-full grid-cols-1">
                                             <TabsTrigger value="all">All</TabsTrigger>
-                                            <TabsTrigger value="available">Available</TabsTrigger>
                                         </TabsList>
                                     </Tabs>
                                 </div>

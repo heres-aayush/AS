@@ -48,7 +48,7 @@ const HelpPage: React.FC = () => {
                                 <h2 className="text-2xl font-bold mb-4">Phone Support</h2>
                                 <p className="text-muted-foreground mb-4">Speak directly with our support team</p>
                                 <Button variant="outline" className="w-full">
-                                    <a href="tel:+1234567890">+1 (234) 567-890</a>
+                                    <a href="tel:+1234567890">+91 9262353846</a>
                                 </Button>
                             </div>
 
@@ -58,7 +58,8 @@ const HelpPage: React.FC = () => {
                                 </div>
                                 <h2 className="text-2xl font-bold mb-4">Live Chat</h2>
                                 <p className="text-muted-foreground mb-4">Chat with our support team in real-time</p>
-                                <Button variant="outline" className="w-full">Start Chat</Button>
+                                <Button variant="outline" className="w-full">
+                                    <a href = "">Start Chat</a></Button>
                             </div>
                         </div>
                     </div>
